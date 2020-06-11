@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Contact;
 use App\Product;
 use Illuminate\Http\Request;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -83,7 +84,8 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        //
+        $category = Category::find($id);
+        return view('categories.edit', compact('category'));
     }
 
     /**
@@ -95,7 +97,26 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name'=>'required',
+            'base64Image'=>'required'
+        ]);
+
+        $img_url = Str::uuid().'.jpg';
+        $path = public_path('images/').$img_url;
+
+        my_image_resize(224,168, $path, request()->base64Image);
+
+        $category = Category::find($id);
+      //  unlink("..\public\images\\".$category->image);
+
+        $category->name =  $request->get('name');
+        $category->description = $request->get('description');
+        $category->image = $img_url;
+
+        $category->save();
+
+        return redirect('/categories')->with('success', 'Category updated!');
     }
 
     /**
@@ -106,7 +127,11 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $category = Category::find($id);
+        unlink("..\public\images\\".$category->image);
+        $category->delete();
+
+        return redirect('/categories')->with('success', 'Categorie deleted!');
     }
 }
 
