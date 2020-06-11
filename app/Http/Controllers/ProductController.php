@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Category;
+use App\Contact;
 use App\ProductImage;
 use Illuminate\Http\Request;
 use App\Product;
@@ -87,7 +89,8 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        //
+        $product= Product::find($id);
+        return view('products.edit', compact('product'));
     }
 
     /**
@@ -99,7 +102,30 @@ class ProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name'=>'required',
+            'description'=>'required'
+        ]);
+
+        $product = Contact::find($id);
+        $product->name =  $request->get('nam4');
+        $product->description = $request->get('description');
+        $product->price = $request->get('price');
+
+
+        $product->save();
+
+        $listImages=$request-> get("productImages");
+        foreach($listImages as $id)
+        {
+            $pi = ProductImage::find($id);
+            $pi->product_id =  $product->id;
+            $pi->save();
+        }
+
+
+
+        return redirect('/products')->with('success', 'Product updated!');
     }
 
     /**
@@ -110,7 +136,11 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Product::find($id);
+
+        $product->delete();
+
+        return redirect('/products')->with('success', 'Product deleted!');
     }
 
 
